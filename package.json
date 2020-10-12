@@ -10,11 +10,19 @@
 		"type": "git",
 		"url": "git+https://github.com/flxsu/devsurfer.git"
 	},
-	"keywords": [ "dev", "web", "server" ],
+	"keywords": [
+		"dev",
+		"web",
+		"server"
+	],
 	"author": "flxsu",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/flxsu/devsurfer/issues"
 	},
-	"homepage": "https://github.com/flxsu/devsurfer#readme"
+	"homepage": "https://github.com/flxsu/devsurfer#readme",
+	"dependencies": {
+		"chokidar": "^3.4.2",
+		"ws": "^7.3.1"
+	}
 }

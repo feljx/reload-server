@@ -1,33 +1,18 @@
-const http = require('http')
-const url = require('url')
-const fs = require('fs')
+const { PORT_HTTP, PORT_WEBSOCKET, HTTP, WEBSOCKET, LOCALHOST } = require('./constants')
+const HTTPServer = require('./http')
+const WebSocketServer = require('./websocket')
 
-const dummy = fs.readFileSync(__dirname + '/index.html')
-
-const LOCALHOST = 'localhost'
-const PORT = 2000
-const TEXT_HTML = 'text/html'
-
-/**
- * @param {http.IncomingMessage} req
- * @param {http.ServerResponse} res
- */
-function handleRequest (req, res) {
-	const reqUrl = url.parse(req.url, true)
-	const path = reqUrl.path
-
-	const isRoot = path === '/'
-	const isHtml = path.slice(-5) === '.html'
-	const isHtm = path.slice(-4) === '.htm'
-
-	console.log(path)
-
-	res.writeHead(200, 'OK', { 'Content-Type': 'text/html' })
-	res.write(dummy)
-	res.end()
+function greet (serverType, host, port) {
+	const addressAndPort = `${host}:${port}`
+	return function () {
+		console.log(`-------> ${serverType} server listening @ ${addressAndPort}`)
+	}
 }
 
-// Execute !
-const server = http.createServer(handleRequest)
-const addressAndPort = `${LOCALHOST}:${PORT}`
-server.listen(PORT, LOCALHOST, () => void console.log(`Listening @ ${addressAndPort}`))
+// Server creation greetings
+const greetHTTP = greet(HTTP, LOCALHOST, PORT_HTTP)
+const greetWebSocket = greet(WEBSOCKET, LOCALHOST, PORT_WEBSOCKET)
+
+// Start HTTP and WebSocket servers
+const httpServer = new HTTPServer(PORT_HTTP, greetHTTP)
+const webSocketServer = new WebSocketServer(PORT_WEBSOCKET, greetWebSocket)
