@@ -1,10 +1,13 @@
 {
-	"name": "devsurfer",
-	"version": "0.0.1",
-	"description": "dev web server",
+	"name": "serve-up",
+	"version": "0.0.2",
+	"description": "Barebones HTTP dev server with live reload capability",
 	"main": "src/index.js",
+	"bin": {
+		"sup": "src/cli.js"
+	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"sup": "node src/cli.js"
 	},
 	"repository": {
 		"type": "git",

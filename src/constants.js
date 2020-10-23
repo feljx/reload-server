@@ -1,8 +1,8 @@
 const LOCALHOST = 'localhost'
 const HTTP = 'HTTP'
 const WEBSOCKET = 'WebSocket'
-const PORT_HTTP = 2000
-const PORT_WEBSOCKET = 2001
+const DEFAULT_DIR = '.'
+const DEFAULT_PORT = 2000
 const CONTENT_TYPES = {
 	css: 'text/css',
 	csv: 'text/csv',
@@ -13,8 +13,21 @@ const CONTENT_TYPES = {
 	png: 'image/png',
 	jpg: 'image/jpeg',
 	jpeg: 'image/jpeg',
+	ico: 'image/x-icon',
 	js: 'text/javascript',
 	mjs: 'text/javascript'
 }
 
-module.exports = { LOCALHOST, HTTP, WEBSOCKET, PORT_HTTP, PORT_WEBSOCKET, CONTENT_TYPES }
+const ARROWL = '<-------'
+const ARROWR = '------->'
+
+module.exports = {
+	LOCALHOST,
+	HTTP,
+	WEBSOCKET,
+	CONTENT_TYPES,
+	ARROWL,
+	ARROWR,
+	DEFAULT_DIR,
+	DEFAULT_PORT
+}
