@@ -6,7 +6,7 @@ const { readFile } = require('fs')
  * @returns {Promise}
  */
 
-const getBinaryFile = (path) =>
+const get_binary_file = (path) =>
 	new Promise((resolve, reject) => {
 		readFile(path, { encoding: null, flag: 'r' }, (err, data) => {
 			if (err) reject(err)
@@ -20,7 +20,7 @@ const getBinaryFile = (path) =>
  * @returns {Promise}
  */
 
-const getTextFile = (path) =>
+const get_text_file = (path) =>
 	new Promise((resolve, reject) => {
 		readFile(path, { encoding: 'utf8', flag: 'r' }, (err, data) => {
 			if (err) reject(err)
@@ -40,4 +40,10 @@ const log_in_red = log_in_color('\x1b[31m')
 const log_in_cyan = log_in_color('\x1b[36m')
 const log_in_green = log_in_color('\x1b[32m')
 
-module.exports = { getBinaryFile, getTextFile, log_in_red, log_in_cyan, log_in_green }
+module.exports = {
+	getBinaryFile: get_binary_file,
+	getTextFile: get_text_file,
+	log_in_red,
+	log_in_cyan,
+	log_in_green
+}

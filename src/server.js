@@ -1,7 +1,7 @@
 const { resolve, extname } = require('path')
 const http = require('http')
 const { Server } = require('ws')
-const { getTextFile, getBinaryFile, log_in_cyan, log_in_red } = require('./utils')
+const { get_text_file, get_binary_file, log_in_cyan, log_in_red } = require('./utils')
 const { CONTENT_TYPES, ARROWL, ARROWR, LOCALHOST } = require('./constants')
 
 function DevServer (dir, port) {
@@ -31,7 +31,9 @@ function DevServer (dir, port) {
 		if (has_mime) {
 			try {
 				// 200 for OK requests
-				const fileReaderFn = mime.includes('text') ? getTextFile : getBinaryFile
+				const fileReaderFn = mime.includes('text')
+					? get_text_file
+					: get_binary_file
 				const data = await fileReaderFn(filepath)
 				// console.log(`=> HTTP ${req.method} - ${mime}: ${requested}`)
 				res.writeHead(200, 'OK', { 'Content-Type': mime })
