@@ -12,7 +12,7 @@ try {
 	const server = DevServer(dir, port)
 	server.start()
 
-	const watcher = chokidar.watch(process.cwd(), {
+	const watcher = chokidar.watch(dir, {
 		ignored: /(^|[\/\\])\../, // ignore dotfiles
 		persistent: true
 	})
