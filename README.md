@@ -2,7 +2,7 @@
 Static HTTP server with live reloading for developing simple web projects
 
 ### Installation
-`npm i cute-dev-server`
+`npm i -D cute-dev-server`
 
 ### Usage
 `cute <directory> <port>`
