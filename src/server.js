@@ -1,10 +1,22 @@
 const { resolve, extname } = require('path')
 const http = require('http')
 const { Server } = require('ws')
-const { get_text_file, get_binary_file, log_in_cyan, log_in_red } = require('./utils')
+const {
+	get_text_file,
+	get_binary_file,
+	log_in_cyan,
+	log_in_red,
+	inject_socket_script,
+	get_socket_script
+} = require('./utils')
 const { CONTENT_TYPES, ARROWL, ARROWR, LOCALHOST } = require('./constants')
 
 function DevServer (dir, port) {
+	if (typeof dir !== 'string') throw new Error('No directory to serve given.')
+	if (typeof port !== 'number') throw new Error('No port given.')
+
+	const socket_port = port + 1
+
 	const handle_http_request = async (req, res) => {
 		const last_char_in_requested_url = req.url[req.url.length - 1]
 		const dir_root_requested = last_char_in_requested_url === '/'
@@ -25,28 +37,34 @@ function DevServer (dir, port) {
 		const filepath = dir_root_requested
 			? resolve(dir, ...url_parts, 'index.html')
 			: resolve(dir, ...url_parts)
+		const fileslug = req.url.match(/(?:.*\/)(.*)/)[1]
 		const mime = CONTENT_TYPES[requested_file_ext]
 		const has_mime = typeof mime === 'string'
+		const is_index_html = dir_root_requested || fileslug === 'index.html'
+		const is_socket_script = !is_index_html && fileslug === '_websocket.js'
 
 		if (has_mime) {
 			try {
-				// 200 for OK requests
 				const fileReaderFn = mime.includes('text')
 					? get_text_file
 					: get_binary_file
-				const data = await fileReaderFn(filepath)
-				// console.log(`=> HTTP ${req.method} - ${mime}: ${requested}`)
+				const data = is_index_html
+					? inject_socket_script(await fileReaderFn(filepath))
+					: is_socket_script
+						? get_socket_script(socket_port)
+						: await fileReaderFn(filepath)
+				// 200 for OK requests
 				res.writeHead(200, 'OK', { 'Content-Type': mime })
 				res.write(data)
 				res.end()
 				return
 			} catch (error) {
-				// 404 if file system access fails
 				log_in_red(
 					error.code === 'ENOENT'
 						? `${ARROWR} No such file or directory: ${filepath}`
 						: error
 				)
+				// 404 if file system access fails
 				res.writeHead(404, 'Not Found')
 				res.end()
 				log_in_red(`${ARROWL} Sent 404 due to file system error`)
@@ -64,8 +82,9 @@ function DevServer (dir, port) {
 
 	try {
 		const server = http.createServer(handle_http_request)
-		const socket_server = new Server({ port: port + 1 })
+		const socket_server = new Server({ port: socket_port })
 		let socket_connection = null
+
 		return Object.freeze({
 			start () {
 				try {
