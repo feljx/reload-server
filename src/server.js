@@ -61,13 +61,12 @@ function DevServer (dir, port) {
 			} catch (error) {
 				log_in_red(
 					error.code === 'ENOENT'
-						? `${ARROWR} No such file or directory: ${filepath}`
+						? `${ARROWL} 404: No such file or directory: ${filepath}`
 						: error
 				)
 				// 404 if file system access fails
 				res.writeHead(404, 'Not Found')
 				res.end()
-				log_in_red(`${ARROWL} Sent 404 due to file system error`)
 				return
 			}
 		}
