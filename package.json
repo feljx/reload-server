@@ -1,29 +1,34 @@
 {
-	"name": "serve-up",
-	"version": "0.0.2",
-	"description": "Barebones HTTP dev server with live reload capability",
+	"name": "cute-dev-server",
+	"version": "0.1.0",
+	"description": "Small static HTTP server with live reloading",
 	"main": "src/index.js",
 	"bin": {
-		"sup": "src/cli.js"
+		"cute": "src/cli.js"
 	},
 	"scripts": {
-		"sup": "node src/cli.js"
+		"cute": "node src/cli.js"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/flxsu/devsurfer.git"
+		"url": "git+https://github.com/flxsu/cute-dev-server.git"
 	},
 	"keywords": [
+		"cute",
+		"static",
+		"http",
+		"server",
 		"dev",
 		"web",
-		"server"
+		"small",
+		"mini"
 	],
 	"author": "flxsu",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/flxsu/devsurfer/issues"
+		"url": "https://github.com/flxsu/cute-dev-server/issues"
 	},
-	"homepage": "https://github.com/flxsu/devsurfer#readme",
+	"homepage": "https://github.com/flxsu/cute-dev-server#readme",
 	"dependencies": {
 		"chokidar": "^3.5.1",
 		"ws": "^7.4.2"
