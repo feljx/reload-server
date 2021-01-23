@@ -3,9 +3,12 @@
 const chokidar = require('chokidar')
 const { DEFAULT_DIR, DEFAULT_PORT, ARROWR } = require('./constants')
 const DevServer = require('./server')
+const { log_in_red } = require('./utils')
 
 // Args
-const [ , , dir = DEFAULT_DIR, port = DEFAULT_PORT ] = process.argv
+const [ , , _dir, _port ] = process.argv
+const dir = _dir || DEFAULT_DIR
+const port = Number(_port) || DEFAULT_PORT
 
 try {
 	// Create server
@@ -23,5 +26,5 @@ try {
 		watcher.on(eventType, () => server.reload())
 	}
 } catch (error) {
-	console.error(`${ARROWR} Couldn't initialize dev server`)
+	log_in_red(`${ARROWR} Couldn't initialize dev server:`, error)
 }
