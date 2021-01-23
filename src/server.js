@@ -14,6 +14,7 @@ const { CONTENT_TYPES, ARROWL, ARROWR, LOCALHOST } = require('./constants')
 function DevServer (dir, port) {
 	if (typeof dir !== 'string') throw new Error('No directory to serve given.')
 	if (typeof port !== 'number') throw new Error('No port given.')
+	if (port <= 0) throw new Error('Wrong port given.')
 
 	const socket_port = port + 1
 
@@ -29,7 +30,7 @@ function DevServer (dir, port) {
 			// 406 for files without extension
 			res.writeHead(406, 'Not Acceptable')
 			res.end()
-			log_in_red(`${ARROWL} Sent 406 due requested file lacking extension`)
+			log_in_red(`${ARROWL} 406: file  has no file extension`)
 			return
 		}
 
@@ -74,7 +75,7 @@ function DevServer (dir, port) {
 			// 406 for files with unhandled MIME type
 			res.writeHead(406, 'Not Acceptable')
 			res.end()
-			log_in_red(`${ARROWL} Sent 406 due to unhandlded MIME type`)
+			log_in_red(`${ARROWL} 406: unhandlded MIME type`)
 			return
 		}
 	}
@@ -84,6 +85,7 @@ function DevServer (dir, port) {
 		const socket_server = new Server({ port: socket_port })
 		let socket_connection = null
 
+		// DevServer API object
 		return Object.freeze({
 			start () {
 				try {
@@ -96,10 +98,7 @@ function DevServer (dir, port) {
 					})
 					log_in_cyan(`${ARROWR} Dev server listening @ localhost:${port}`)
 				} catch (error) {
-					log_in_red(
-						`${ARROWR} Dev server couldn't be started due to the following error:`,
-						error
-					)
+					log_in_red(`${ARROWR} Dev server couldn't be started:`, error)
 				}
 			},
 			reload () {
