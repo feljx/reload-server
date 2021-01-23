@@ -9,7 +9,7 @@ Static HTTP server with live reloading for developing simple web projects
 
 or create an npm script like so
 
-`"script-name": "cute cute <directory> <port>"`
+`"script-name": "cute <directory> <port>"`
 
 Defaults (if not specified)
 - directory: `.` (current directory)
