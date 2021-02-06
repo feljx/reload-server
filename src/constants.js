@@ -15,7 +15,10 @@ const CONTENT_TYPES = {
 	jpeg: 'image/jpeg',
 	ico: 'image/x-icon',
 	js: 'text/javascript',
-	mjs: 'text/javascript'
+	mjs: 'text/javascript',
+	ttf: 'font/ttf',
+	woff: 'font/woff',
+	woff2: 'font/woff2'
 }
 
 const ARROWL = '<-------'

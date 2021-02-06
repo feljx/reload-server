@@ -22,7 +22,11 @@ try {
 
 	const changeEvents = [ 'add', 'change', 'unlink', 'addDir', 'unlinkDir' ]
 
+	// on change
 	for (const eventType of changeEvents) {
+		// execute optional side effect
+		//
+		// reload server
 		watcher.on(eventType, () => server.reload())
 	}
 } catch (error) {
