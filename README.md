@@ -14,3 +14,9 @@ or create an npm script like so
 Defaults (if not specified)
 - directory: `.` (current directory)
 - port: `2000`
+
+#### Custom Script Callback
+
+Execute a custom node script on file change
+
+`npx cute <directory> <port> <node_script>`
