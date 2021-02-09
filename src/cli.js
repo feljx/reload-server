@@ -1,50 +1,53 @@
-#!/usr/bin/env node
+const { hasFolderFormat, hasPortFormat, hasScriptFormat } = require('./utils')
+const { CuteServer } = require('./server')
 
-const { execFile, execFileSync } = require('child_process')
-const chokidar = require('chokidar')
-const { DEFAULT_DIR, DEFAULT_PORT, ARROWR } = require('./constants')
-const DevServer = require('./server')
-const { log_in_red } = require('./utils')
-
-// Args
-const [ , , _dir, _port, watch_callback_script ] = process.argv
-const dir = _dir || DEFAULT_DIR
-const port = Number(_port) || DEFAULT_PORT
-
-try {
-	// Create server
-	const server = DevServer(dir, port)
-	server.start()
-
-	const watcher = chokidar.watch(dir, {
-		ignored: /(^|[\/\\])\../, // ignore dotfiles
-		persistent: true
-	})
-
-	const changeEvents = [ 'add', 'change', 'unlink', 'addDir', 'unlinkDir' ]
-
-	let side_effect_in_progress = false
-	// for all change events
-	for (const eventType of changeEvents) {
-		// on change
-		watcher.on(eventType, () => {
-			// execute optional side effect
-			if (watch_callback_script) {
-				if (!side_effect_in_progress) {
-					side_effect_in_progress = true
-
-					execFile('node', [ watch_callback_script ], (error) => {
-						side_effect_in_progress = false
-						if (error) {
-							console.error(error)
-						}
-					})
-				}
-			}
-			// reload server
-			server.reload()
-		})
-	}
-} catch (error) {
-	log_in_red(`${ARROWR} Couldn't initialize dev server:`, error)
+const OPT_INPUT = '-i'
+const OPT_SERVE = '-s'
+const OPT_PORT = '-p'
+const OPT_EFFECT = '-e'
+const predicates = {
+    [OPT_INPUT]: hasFolderFormat,
+    [OPT_SERVE]: hasFolderFormat,
+    [OPT_PORT]: hasPortFormat,
+    [OPT_EFFECT]: hasScriptFormat
 }
+const labels = {
+    [OPT_INPUT]: 'inputPath',
+    [OPT_SERVE]: 'servedPath',
+    [OPT_PORT]: 'port',
+    [OPT_EFFECT]: 'effect'
+}
+
+function parseArguments (_args) {
+    const [ , , ...args ] = _args
+    const tuples = [ ...args ].reduce((acc, elm) => {
+        const lastItem = acc[acc.length - 1]
+        if (lastItem && lastItem.length < 2) {
+            lastItem.push(elm)
+        }
+        else {
+            acc.push([ elm ])
+        }
+        return acc
+    }, [])
+    const dict = tuples.reduce((acc, elm) => {
+        const opt = elm[0]
+        const arg = elm[1]
+        const predicate = predicates[opt]
+        if (predicate && predicate(arg)) {
+            acc[labels[opt]] = arg
+        }
+        return acc
+    }, {})
+    return dict
+}
+
+const serverArgs = parseArguments(process.argv)
+
+// EXECUTION
+if (serverArgs.inputPath) {
+    const server = CuteServer(serverArgs)
+    server.start()
+}
+
+module.exports = { parseArguments }

@@ -31,6 +31,11 @@
 	"homepage": "https://github.com/flxsu/cute-dev-server#readme",
 	"dependencies": {
 		"chokidar": "^3.5.1",
+		"express": "^4.17.1",
+		"mime": "^1.6.0",
 		"ws": "^7.4.2"
+	},
+	"devDependencies": {
+		"zora": "^4.0.2"
 	}
 }
