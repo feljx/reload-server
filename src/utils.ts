@@ -1,31 +1,31 @@
-const { extname } = require('path')
-const { readFile } = require('fs')
+import { extname } from 'path'
+import { readFile } from 'fs'
 
-function replaceAll (a, b, s) {
+export function replaceAll (a: string, b: string, s: string) {
     while (s.includes(a)) {
         s = s.replace(a, b)
     }
     return s
 }
 
-function unixifyPath (path) {
+export function unixifyPath (path: string) {
     const double_back = '\\\\'
     const single_back = '\\'
     const forward = '/'
     return replaceAll(single_back, forward, replaceAll(double_back, forward, path))
 }
 
-function hasFolderFormat (str) {
-    return str && extname(str) === ''
+export function hasFolderFormat (str: string) {
+    return !!str && extname(str) === ''
 }
 
-function hasPortFormat (str) {
+export function hasPortFormat (str: string) {
     const num = Number(str)
     return !isNaN(num) && num > 0 && num < 10000
 }
 
-function hasScriptFormat (str) {
-    return str && extname(str) === '.js'
+export function hasScriptFormat (str: string) {
+    return !!str && extname(str) === '.js'
 }
 
 /**
@@ -33,7 +33,7 @@ function hasScriptFormat (str) {
  * @param {string} path
  * @returns {Promise}
  */
-function getBinaryFile (path) {
+export function getBinaryFile (path: string) {
     return new Promise((resolve, reject) => {
         readFile(path, { encoding: null, flag: 'r' }, (err, data) => {
             if (err) reject(err)
@@ -47,7 +47,7 @@ function getBinaryFile (path) {
  * @param {string} path
  * @returns {Promise}
  */
-function getTextFile (path) {
+export function getTextFile (path: string) {
     return new Promise((resolve, reject) => {
         readFile(path, { encoding: 'utf8', flag: 'r' }, (err, data) => {
             if (err) reject(err)
@@ -60,17 +60,10 @@ function getTextFile (path) {
  * Inject websocket script into index.html data *
  * @param {string} data
  */
-function injectSocketScript (data) {
+export function injectSocketScript (data: string) {
     const regex = /([^]+)(<body>\n?)(\s*)([^]+)(<\/body>)([^]+)/
-    const [
-        _,
-        rest_start,
-        body_tag_open,
-        indent,
-        rest_mid,
-        body_tag_close,
-        rest_end
-    ] = data.match(regex)
+    const [ _, rest_start, body_tag_open, indent, rest_mid, body_tag_close, rest_end ] =
+        data.match(regex) || []
     const script_tag = '<script src="_websocket.js"></script>\n'
     return (
         rest_start +
@@ -88,7 +81,7 @@ function injectSocketScript (data) {
  * Get WebSocket script to serve
  * @param {number | string} port
  */
-function getSocketScript (port) {
+export function getSocketScript (port: number | string) {
     return `const url = 'ws://localhost:${port}'
 const webSocket = new WebSocket(url)
 webSocket.addEventListener('open', (event) => {
@@ -108,21 +101,8 @@ webSocket.addEventListener('open', (event) => {
  * @param {string} color
  * @returns {(...msgs: any[]) => void}
  */
-const log_in_color = (color) => (...msgs) => console.log(color, ...msgs, '\x1b[0m')
-const logRed = log_in_color('\x1b[31m')
-const logCyan = log_in_color('\x1b[36m')
-const logGreen = log_in_color('\x1b[32m')
-
-// Exports
-module.exports = {
-    hasFolderFormat,
-    hasPortFormat,
-    hasScriptFormat,
-    getBinaryFile,
-    getTextFile,
-    logRed,
-    logCyan,
-    logGreen,
-    replaceAll,
-    unixifyPath
-}
+export const log_in_color = (color: string) => (...msgs: any[]) =>
+    console.log(color, ...msgs, '\x1b[0m')
+export const logRed = log_in_color('\x1b[31m')
+export const logCyan = log_in_color('\x1b[36m')
+export const logGreen = log_in_color('\x1b[32m')

@@ -1,13 +1,13 @@
-const chokidar = require('chokidar')
-const { normalize } = require('path')
+import chokidar from 'chokidar'
+import { normalize } from 'path'
 
-function Watcher (path) {
+export function Watcher (path: string) {
     const watcher = chokidar.watch(path, {
         ignored: /(^|[\/\\])\../, // ignore dotfiles
         persistent: true
     })
     const instance = Object.freeze({
-        onUpdate (...callbacks) {
+        onUpdate (...callbacks: Function[]) {
             const watchEvents = [ 'add', 'change', 'unlink' ]
             watchEvents.forEach((eventName) => {
                 watcher.on(eventName, (filepath) => {
@@ -23,5 +23,3 @@ function Watcher (path) {
     })
     return instance
 }
-
-module.exports = { Watcher }

@@ -1,24 +1,26 @@
-const express = require('express')
-const { dirname } = require('path')
-const mime = require('mime')
-const { Watcher } = require('./watcher')
-const WebsocketServer = require('ws').Server
-const { getBinaryFile, getTextFile, unixifyPath } = require('./utils')
+import express from 'express'
+import mime from 'mime'
+import WebSocket, { Server as WebsocketServer } from 'ws'
+import { Watcher } from './watcher'
+import { Arguments } from './cli'
+import { getBinaryFile, getTextFile, unixifyPath } from './utils'
+import { Server as HttpServer } from 'http'
+
 const DEFAULT_PORT = 8000
 
-function getMime (filepath) {
+function getMime (filepath: string) {
     // @ts-ignore
     return mime.lookup(filepath)
 }
 
-function isTextFile (filepath) {
+function isTextFile (filepath: string) {
     // @ts-ignore
     const m = mime.lookup(filepath)
     // @ts-ignore
     return m.slice(0, 4) === 'text' || m === mime.lookup('js') || m === mime.lookup('mjs')
 }
 
-function CachePath (filepath) {
+function CachePath (filepath: string) {
     const unixPath = unixifyPath(filepath)
     const regex = /\w+(\/.*)?$/
     const match = regex.exec(unixPath)
@@ -26,10 +28,24 @@ function CachePath (filepath) {
     return cachePath[cachePath.length - 1] === '/' ? cachePath + 'index.html' : cachePath
 }
 
-function CuteServer ({ inputPath, servedPath, _port, effect }) {
+interface Cache {
+    [key: string]: any
+}
+
+interface CuteServerInstance {
+    start: Function
+    stop: Function
+}
+
+export default function CuteServer ({
+    inputPath,
+    servedPath,
+    _port,
+    effect
+}: Arguments): Readonly<CuteServerInstance> {
     try {
         // initialize file data cache
-        const cache = {}
+        const cache: Cache = {}
         // initialize app
         const app = express()
         // normalize port argument
@@ -37,24 +53,25 @@ function CuteServer ({ inputPath, servedPath, _port, effect }) {
         // create Watcher object (wraps chokidar)
         const watcher = Watcher(inputPath)
         // cache files callback
-        const cacheFiles = (filepath) => {
+        const cacheFiles = (filepath: string) => {
             const fileData = isTextFile(filepath)
                 ? getTextFile(filepath)
                 : getBinaryFile(filepath)
             fileData
-                .then((data) => void (cache[CachePath(filepath)] = data))
+                .then((data) => void ((cache as any)[CachePath(filepath)] = data))
                 .catch((error) => {
                     throw new Error(`ERROR reading data from server: ${error}`)
                 })
         }
         // reload client thru websocket
-        const reloadClient = (filepath) => {}
+        const reloadClient = (filepath: string) => {}
         // on file change, apply file paths to callbacks
         watcher.onUpdate(cacheFiles)
 
         // HTTP and WebSocket servers instances
-        let nodeHttpServer
-        let websocketServer
+        let nodeHttpServer: HttpServer
+        let websocketServer: WebsocketServer
+        let socket: WebSocket | null
         // CuteServer instance
         const instance = Object.freeze({
             start () {
@@ -74,12 +91,12 @@ function CuteServer ({ inputPath, servedPath, _port, effect }) {
                     console.log(`Listening at http://localhost:${port}`)
                 })
                 // initialize WebSocket server
-                websocketServer = new WebsocketServer({ port: socket_port })
-                socket_server.on('connection', (ws) => {
-                    socket_connection = ws
+                websocketServer = new WebsocketServer({ port: port + 1 })
+                websocketServer.on('connection', (ws) => {
+                    socket = ws
                 })
-                socket_server.on('close', () => {
-                    socket_connection = null
+                websocketServer.on('close', () => {
+                    socket = null
                 })
             },
             //
@@ -90,8 +107,6 @@ function CuteServer ({ inputPath, servedPath, _port, effect }) {
         // return CuteServer instance
         return instance
     } catch (error) {
-        console.log(new Error(`ERROR thrown in CuteServer instance code: ${error}`))
+        throw new Error(`ERROR thrown in CuteServer instance code: ${error}`)
     }
 }
-
-module.exports = { CuteServer }
