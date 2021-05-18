@@ -3,21 +3,27 @@ import mime from 'mime'
 import WebSocket, { Server as WebsocketServer } from 'ws'
 import { Watcher } from './watcher'
 import { Arguments } from './cli'
-import { getBinaryFile, getTextFile, unixifyPath } from './utils'
+import {
+    getBinaryFile,
+    getSocketScript,
+    getTextFile,
+    injectSocketScript,
+    SOCKET_SCRIPT_NAME,
+    unixifyPath
+} from './utils'
 import { Server as HttpServer } from 'http'
 
 const DEFAULT_PORT = 8000
 
 function getMime (filepath: string) {
-    // @ts-ignore
-    return mime.lookup(filepath)
+    return mime.getType(filepath)
 }
 
 function isTextFile (filepath: string) {
-    // @ts-ignore
-    const m = mime.lookup(filepath)
-    // @ts-ignore
-    return m.slice(0, 4) === 'text' || m === mime.lookup('js') || m === mime.lookup('mjs')
+    const m = mime.getType(filepath)
+    return (
+        m.slice(0, 4) === 'text' || m === mime.getType('js') || m === mime.getType('mjs')
+    )
 }
 
 function CachePath (filepath: string) {
@@ -44,29 +50,41 @@ export default function CuteServer ({
     effect
 }: Arguments): Readonly<CuteServerInstance> {
     try {
-        // initialize file data cache
-        const cache: Cache = {}
-        // initialize app
-        const app = express()
         // normalize port argument
         const port = Number(_port) || DEFAULT_PORT
+        const websocketPort = port + 1
+        // initialize file data cache
+        const cache: Cache = {}
+        cache[`/${SOCKET_SCRIPT_NAME}`] = getSocketScript(websocketPort)
+        // initialize app
+        const app = express()
         // create Watcher object (wraps chokidar)
         const watcher = Watcher(inputPath)
         // cache files callback
         const cacheFiles = (filepath: string) => {
-            const fileData = isTextFile(filepath)
-                ? getTextFile(filepath)
-                : getBinaryFile(filepath)
-            fileData
-                .then((data) => void ((cache as any)[CachePath(filepath)] = data))
-                .catch((error) => {
-                    throw new Error(`ERROR reading data from server: ${error}`)
-                })
+            const fileReaderFn = isTextFile(filepath) ? getTextFile : getBinaryFile
+            const cachePath = CachePath(filepath)
+            const isIndexHtml = cachePath.includes('index.html')
+            const cacheData = (isIndexHtml: boolean) => (data: any) =>
+                void ((cache as any)[cachePath] = isIndexHtml
+                    ? injectSocketScript(data)
+                    : data)
+            fileReaderFn(filepath).then(cacheData(isIndexHtml)).catch((error) => {
+                throw new Error(`ERROR reading data from server: ${error}`)
+            })
         }
         // reload client thru websocket
-        const reloadClient = (filepath: string) => {}
-        // on file change, apply file paths to callbacks
-        watcher.onUpdate(cacheFiles)
+        const reloadClient = () => {
+            if (socket) {
+                socket.send('reload')
+            }
+        }
+        // on file change, cache files and reload client
+        const cacheFilesAndReload = (path: string) => {
+            cacheFiles(path)
+            reloadClient()
+        }
+        watcher.onUpdate(cacheFilesAndReload)
 
         // HTTP and WebSocket servers instances
         let nodeHttpServer: HttpServer
@@ -82,7 +100,7 @@ export default function CuteServer ({
                             ? req.url + 'index.html'
                             : req.url
                     const data = cache[requestedPath]
-                    console.log(`REQUEST ${req.url} MAPPED TO ${requestedPath}`)
+                    // console.log(`REQUEST ${req.url} MAPPED TO ${requestedPath}`)
                     res.set('Content-Type', getMime(requestedPath))
                     res.send(data)
                 })
@@ -91,7 +109,7 @@ export default function CuteServer ({
                     console.log(`Listening at http://localhost:${port}`)
                 })
                 // initialize WebSocket server
-                websocketServer = new WebsocketServer({ port: port + 1 })
+                websocketServer = new WebsocketServer({ port: websocketPort })
                 websocketServer.on('connection', (ws) => {
                     socket = ws
                 })

@@ -56,6 +56,8 @@ export function getTextFile (path: string) {
     })
 }
 
+export const SOCKET_SCRIPT_NAME = '_websocket.js'
+
 /**
  * Inject websocket script into index.html data *
  * @param {string} data
@@ -64,7 +66,7 @@ export function injectSocketScript (data: string) {
     const regex = /([^]+)(<body>\n?)(\s*)([^]+)(<\/body>)([^]+)/
     const [ _, rest_start, body_tag_open, indent, rest_mid, body_tag_close, rest_end ] =
         data.match(regex) || []
-    const script_tag = '<script src="_websocket.js"></script>\n'
+    const script_tag = `<script src="${SOCKET_SCRIPT_NAME}"></script>\n`
     return (
         rest_start +
         body_tag_open +

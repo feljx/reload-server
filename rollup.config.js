@@ -18,6 +18,7 @@ export default {
             plugins: [ terser() ]
         }
     ],
+    external: [ 'path', 'fs', 'express', 'mime', 'ws', 'chokidar' ],
     plugins: [ typescript() ],
     watch: {
         include: 'src/**'
