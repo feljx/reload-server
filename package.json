@@ -2,15 +2,11 @@
 	"name": "cute-dev-server",
 	"version": "0.2.0-alpha.1",
 	"description": "Small static HTTP server with live reloading",
-	"main": "dist/CuteDevServer.min.js",
+	"main": "src/CuteDevServer.min.js",
 	"bin": {
-		"cute": "dist/CuteDevServer.min.js"
+		"cute": "src/CuteDevServer.min.js"
 	},
-	"scripts": {
-		"build": "rollup --config",
-		"prestart": "npm run build",
-		"start": "node dist/CuteDevServer.min.js -i sample -p 2000"
-	},
+	"scripts": {},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/flxsu/cute-dev-server.git"
