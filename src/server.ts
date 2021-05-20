@@ -1,5 +1,5 @@
 import express from 'express'
-import mime from 'mime'
+import { getType } from 'mime'
 import WebSocket, { Server as WebsocketServer } from 'ws'
 import { Watcher } from './watcher'
 import { Arguments } from './cli'
@@ -16,14 +16,12 @@ import { Server as HttpServer } from 'http'
 const DEFAULT_PORT = 8000
 
 function getMime (filepath: string) {
-    return mime.getType(filepath)
+    return getType(filepath)
 }
 
 function isTextFile (filepath: string) {
-    const m = mime.getType(filepath)
-    return (
-        m.slice(0, 4) === 'text' || m === mime.getType('js') || m === mime.getType('mjs')
-    )
+    const m = getType(filepath)
+    return m.slice(0, 4) === 'text' || m === getType('js') || m === getType('mjs')
 }
 
 function CachePath (filepath: string) {
