@@ -1,22 +1,16 @@
-# cute-dev-server
+# reload-server
 Static HTTP server with live reloading for developing simple web projects
 
 ### Installation
-`npm i -D cute-dev-server`
+`npm i -D reload-server`
 
 ### Usage
-`npx cute <directory> <port>`
+`npx reload-server -i <inputFolder> -p <port>`
+Input folder is required, port is optional.
 
 or create an npm script like so
 
-`"script-name": "cute <directory> <port>"`
+`"script-name": "reload-server -i <inputFolder> -p <port>`
 
 Defaults (if not specified)
-- directory: `.` (current directory)
-- port: `2000`
-
-#### Custom Script Callback
-
-Execute a custom node script on file change
-
-`npx cute <directory> <port> <node_script>`
+- port: `8000`
