@@ -6,6 +6,7 @@ Static HTTP server with live reloading for developing simple web projects
 
 ### Usage
 `npx reload-server -i <inputFolder> -p <port>`
+
 Input folder is required, port is optional.
 
 or create an npm script like so
