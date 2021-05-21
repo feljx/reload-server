@@ -1,4 +1,5 @@
 import typescript from '@rollup/plugin-typescript'
+import copy from 'rollup-plugin-copy'
 import { terser } from 'rollup-plugin-terser'
 
 export default {
@@ -19,7 +20,14 @@ export default {
         }
     ],
     external: [ 'path', 'fs', 'express', 'mime', 'ws', 'chokidar' ],
-    plugins: [ typescript() ],
+    plugins: [
+        typescript(),
+        copy({
+            targets: [
+                { src: 'dist_package.json', dest: 'dist', rename: 'package.json' }
+            ]
+        })
+    ],
     watch: {
         include: 'src/**'
     }
