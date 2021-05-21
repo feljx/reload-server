@@ -1,10 +1,10 @@
 {
     "name": "reload-server",
-    "version": "0.2.0-alpha.2",
+    "version": "0.2.0-alpha.3",
     "description": "Small static HTTP server with live reloading",
-    "main": "./dist/index.min.js",
+    "main": "./index.min.js",
     "bin": {
-        "reload-server": "./dist/index.min.js"
+        "reload-server": "./index.min.js"
     },
     "repository": {
         "type": "git",
