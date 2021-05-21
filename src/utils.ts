@@ -1,5 +1,20 @@
-import { extname } from 'path'
+import mime from 'mime'
 import { readFile } from 'fs'
+
+export function isTextFile (filepath: string) {
+    const m = mime.getType(filepath)
+    return (
+        m.slice(0, 4) === 'text' || m === mime.getType('js') || m === mime.getType('mjs')
+    )
+}
+
+export function CachePath (filepath: string) {
+    const unixPath = unixifyPath(filepath)
+    const regex = /\w+(\/.*)?$/
+    const match = regex.exec(unixPath)
+    const cachePath = (match && match[1]) || '/'
+    return cachePath[cachePath.length - 1] === '/' ? cachePath + 'index.html' : cachePath
+}
 
 export function replaceAll (a: string, b: string, s: string) {
     while (s.includes(a)) {
@@ -13,19 +28,6 @@ export function unixifyPath (path: string) {
     const single_back = '\\'
     const forward = '/'
     return replaceAll(single_back, forward, replaceAll(double_back, forward, path))
-}
-
-export function hasFolderFormat (str: string) {
-    return !!str && extname(str) === ''
-}
-
-export function hasPortFormat (str: string) {
-    const num = Number(str)
-    return !isNaN(num) && num > 0 && num < 10000
-}
-
-export function hasScriptFormat (str: string) {
-    return !!str && extname(str) === '.js'
 }
 
 /**
@@ -84,8 +86,7 @@ export function injectSocketScript (data: string) {
  * @param {number | string} port
  */
 export function getSocketScript (port: number | string) {
-    return `const url = 'ws://localhost:${port}'
-const webSocket = new WebSocket(url)
+    return `const webSocket = new WebSocket('ws://localhost:${port}')
 webSocket.addEventListener('open', (event) => {
     console.log('Live reload: websocket connected')
     webSocket.addEventListener('message', (event) => {

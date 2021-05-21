@@ -1,55 +1,38 @@
 import express from 'express'
-import { getType } from 'mime'
-import WebSocket, { Server as WebsocketServer } from 'ws'
+import mime from 'mime'
+import WebSocket from 'ws'
 import { Watcher } from './watcher'
-import { Arguments } from './cli'
+import { Arguments } from './args'
 import {
+    CachePath,
     getBinaryFile,
     getSocketScript,
     getTextFile,
     injectSocketScript,
+    isTextFile,
     SOCKET_SCRIPT_NAME,
     unixifyPath
 } from './utils'
 import { Server as HttpServer } from 'http'
 
-const DEFAULT_PORT = 8000
-
-function getMime (filepath: string) {
-    return getType(filepath)
-}
-
-function isTextFile (filepath: string) {
-    const m = getType(filepath)
-    return m.slice(0, 4) === 'text' || m === getType('js') || m === getType('mjs')
-}
-
-function CachePath (filepath: string) {
-    const unixPath = unixifyPath(filepath)
-    const regex = /\w+(\/.*)?$/
-    const match = regex.exec(unixPath)
-    const cachePath = (match && match[1]) || '/'
-    return cachePath[cachePath.length - 1] === '/' ? cachePath + 'index.html' : cachePath
-}
-
 interface Cache {
     [key: string]: any
 }
 
-interface CuteServerInstance {
+interface LiveReloadServerInstance {
     start: Function
     stop: Function
 }
 
-export default function CuteServer ({
+export default function LiveReloadServer ({
     inputPath,
     servedPath,
     _port,
     effect
-}: Arguments): Readonly<CuteServerInstance> {
+}: Arguments): Readonly<LiveReloadServerInstance> {
     try {
         // normalize port argument
-        const port = Number(_port) || DEFAULT_PORT
+        const port = Number(_port)
         const websocketPort = port + 1
         // initialize file data cache
         const cache: Cache = {}
@@ -58,6 +41,11 @@ export default function CuteServer ({
         const app = express()
         // create Watcher object (wraps chokidar)
         const watcher = Watcher(inputPath)
+        // HTTP and WebSocket servers instances
+        let nodeHttpServer: HttpServer
+        let websocketServer: WebSocket.Server
+        let socket: WebSocket | null
+
         // cache files callback
         const cacheFiles = (filepath: string) => {
             const fileReaderFn = isTextFile(filepath) ? getTextFile : getBinaryFile
@@ -84,11 +72,7 @@ export default function CuteServer ({
         }
         watcher.onUpdate(cacheFilesAndReload)
 
-        // HTTP and WebSocket servers instances
-        let nodeHttpServer: HttpServer
-        let websocketServer: WebsocketServer
-        let socket: WebSocket | null
-        // CuteServer instance
+        // LiveReloadServer instance
         const instance = Object.freeze({
             start () {
                 // routing
@@ -99,7 +83,7 @@ export default function CuteServer ({
                             : req.url
                     const data = cache[requestedPath]
                     // console.log(`REQUEST ${req.url} MAPPED TO ${requestedPath}`)
-                    res.set('Content-Type', getMime(requestedPath))
+                    res.set('Content-Type', mime.getType(requestedPath))
                     res.send(data)
                 })
                 // initialize HTTP server
@@ -107,7 +91,7 @@ export default function CuteServer ({
                     console.log(`Listening at http://localhost:${port}`)
                 })
                 // initialize WebSocket server
-                websocketServer = new WebsocketServer({ port: websocketPort })
+                websocketServer = new WebSocket.Server({ port: websocketPort })
                 websocketServer.on('connection', (ws) => {
                     socket = ws
                 })
@@ -120,9 +104,9 @@ export default function CuteServer ({
                 if (nodeHttpServer) nodeHttpServer.close()
             }
         })
-        // return CuteServer instance
+        // return LiveReloadServer instance
         return instance
     } catch (error) {
-        throw new Error(`ERROR thrown in CuteServer instance code: ${error}`)
+        throw new Error(`ERROR thrown in LiveReloadServer instance code: ${error}`)
     }
 }
